@@ -1,1 +1,2 @@
-as_bitwise(data)
+)
+                apply_insert(graph,

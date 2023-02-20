@@ -100,9 +100,3 @@ def solve(inPath, outPath):
     S = import_data(inPath)
     graph = build_graph(S)
     export_soln(graph, outPath)
-    
-    
-
-
-
-solve('./data/3515.txt', './data/solutions/3515_dfs_insert.txt')

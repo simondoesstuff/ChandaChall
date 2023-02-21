@@ -1,7 +1,5 @@
 ## This algorithm can solve the largest dataset in 135 seconds.
 
----
-
 # Trickle Algorithm
 
 For a dataset of $N$ nodes, the algorithm performs an insertion into the graph for each node.

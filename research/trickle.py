@@ -166,7 +166,7 @@ def build_graph(S, workers):
                     _apply_insert(graph, *action)
             
             completedNodes += layerSize
-            _log(f"\t- ~{completedNodes/dataSize * 100:.1f}% done.\tCompleted layer {k + 1} with {len(nextLayer)} nodes.")
+            _log(f"\t- ~{completedNodes/dataSize * 100:.1f}% done.\tCompleted layer size {k} with {len(nextLayer)} nodes.")
     
     # root node is not part of the solution
     graph.pop(0)

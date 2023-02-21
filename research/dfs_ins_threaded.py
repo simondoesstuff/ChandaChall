@@ -1,9 +1,17 @@
 import concurrent.futures # thread pool
-import argparse
-import time
 
 
 def import_data(path):
+    """Imports data from a file. The file should be a list of integers separated by spaces on each line.
+    Nodes are represented as a bitwise integer where each bit represents an attribute.
+
+    Args:
+        path (str): Input file path
+
+    Yields:
+        int: extracted node
+    """
+    
     with open(path) as f:
         for line in f:
             value = 0
@@ -16,6 +24,13 @@ def import_data(path):
 
 
 def export_soln(graph, path):
+    """Exports the solution to a file. The file is a list of edges separated by newlines.
+    Takes in a graph of nodes represented as a bitwise integer and converts it to a list of integers.
+
+    Args:
+        path (str): Output file path
+    """
+    
     def from_bitwise(value):
         index = 1
     
@@ -39,11 +54,16 @@ def export_soln(graph, path):
         f.write(strContents)
 
 
-def issubset(a, b):
+def _issubset(a, b):
     return (a & b) == a
 
 
-def apply_insert(graph, node, parent, child):
+def _apply_insert(graph, node, parent, child):
+    """Apply an insert operation to the graph.
+    If child is None, then the node is inserted as new a child of parent.
+    Otherwise, the edge is split and the node is inserted as a child of parent and child is inserted as a child of node.
+    """
+    
     parentAdj = graph[parent]
     graph.setdefault(node, set())
     
@@ -55,7 +75,13 @@ def apply_insert(graph, node, parent, child):
         parentAdj.add(node)
 
 
-def analyze(graph, node):
+def _analyze(graph, node):
+    """Analyze the graph in the context of a single node.
+
+    Returns:
+        (int, int, int): (node, parent, child) representing the edge split; the change to the graph
+    """
+    
     visited = set()
     frontier = [0]
     results = []
@@ -74,15 +100,18 @@ def analyze(graph, node):
         for child in children:
             if child in visited:
                 stuck = False
-            if issubset(child, node):
+            # if the child is a subset of the node, we continue along the path
+            if _issubset(child, node):
                 frontier.append(child)
                 stuck = False
-            elif issubset(node, child):
+            # if the node is a subset of the child, we have found an edge split
+            elif _issubset(node, child):
                 # we have found an edge split
                 stuck = False
                 results.append((node, parent, child))
         
         if stuck:
+            # dead end; append a new branch
             results.append((node, parent, None))
     
     return results
@@ -90,6 +119,15 @@ def analyze(graph, node):
 
 # runs in O(|S|^2) time
 def build_graph(S, workers):
+    """Analyze the graph and build the solution.
+
+    Args:
+        workers (int): Workers to use for parallelization
+
+    Returns:
+        Dictionary: Graph in the form of a dictionary of edges
+    """
+    
     graph = {0: set()}
     dataBySize = {}
     
@@ -99,28 +137,48 @@ def build_graph(S, workers):
         dataBySize.setdefault(length, []).append(node)
 
     with concurrent.futures.ProcessPoolExecutor() as pool:
+        # analysis must be done in layers; nodes of the same size must be analyzed together
         for k in sorted(dataBySize.keys()):
-            chunkSize = max(1, len(dataBySize[k]) // workers)
-            nextNodeSet = dataBySize[k]
-            results = list(pool.map(analyze, [graph]*len(nextNodeSet), nextNodeSet, chunksize=chunkSize))
+            nextLayer = dataBySize[k]
+            layerSize = len(nextLayer)
+            chunkSize = max(1, layerSize // workers)
+            
+            # parallelize the analysis
+            results = list(pool.map(_analyze, [graph] * layerSize, nextLayer, chunksize=chunkSize))
 
+            # apply the results in sync to avoid race conditions
             for result in results:
                 for action in result:
-                    apply_insert(graph, *action)
+                    _apply_insert(graph, *action)
     
+    # root node is not part of the solution
     graph.pop(0)
+    # remove nodes with no children
     graph = {k: v for k, v in graph.items() if len(v) > 0}
     
     return graph
 
 
-def solve(inPath, outPath, workers):
+def solve(inPath: str, outPath: str, workers: int):
+    """Solve the DNA subset problem.
+     
+    Args:
+        inPath (str): Data input path
+        outPath (str): Data output path
+        workers (int): Amount of workers to use for parallelization
+    """
+    
     S = import_data(inPath)
     graph = build_graph(S, workers)
     export_soln(graph, outPath)
 
 
 if __name__ == '__main__':
+    # these imports are only used for the command line interface
+    # the API does not require them
+    import argparse
+    import time
+    
     parser = argparse.ArgumentParser("DFSIns")
     parser.add_argument('inPath', type=str, help='Path to input file')
     parser.add_argument('-o', '--outPath', type=str, help='Path to output file')

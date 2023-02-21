@@ -1,6 +1,12 @@
 import concurrent.futures # thread pool
 
 
+def _log(message):
+    global _silent
+    if not _silent:
+        print(message)
+
+
 def import_data(path):
     """Imports data from a file. The file should be a list of integers separated by spaces on each line.
     Nodes are represented as a bitwise integer where each bit represents an attribute.
@@ -128,13 +134,20 @@ def build_graph(S, workers):
         Dictionary: Graph in the form of a dictionary of edges
     """
     
+    S = list(S)
+    dataSize = len(S)
     graph = {0: set()}
     dataBySize = {}
-    
+
     # sorting nodes by size
     for node in S:
         length = bin(node).count('1')
         dataBySize.setdefault(length, []).append(node)
+    
+    _log(f"- Analyzing {len(S)} nodes with {workers} workers.")
+    _log(f"- Beginning with {len(dataBySize)} layers.")
+
+    completedNodes = 0
 
     with concurrent.futures.ProcessPoolExecutor() as pool:
         # analysis must be done in layers; nodes of the same size must be analyzed together
@@ -150,6 +163,9 @@ def build_graph(S, workers):
             for result in results:
                 for action in result:
                     _apply_insert(graph, *action)
+            
+            completedNodes += layerSize
+            _log(f"\t- ~{completedNodes/dataSize * 100:.1f}% done.\tCompleted layer {k} with {len(nextLayer)} nodes.")
     
     # root node is not part of the solution
     graph.pop(0)
@@ -170,6 +186,7 @@ def solve(inPath: str, outPath: str, workers: int):
     
     S = import_data(inPath)
     graph = build_graph(S, workers)
+    _log("- Completed analysis.")
     export_soln(graph, outPath)
 
 
@@ -178,15 +195,31 @@ if __name__ == '__main__':
     # the API does not require them
     import argparse
     import time
+    import os
     
     parser = argparse.ArgumentParser("DFSIns")
     parser.add_argument('inPath', type=str, help='Path to input file')
     parser.add_argument('-o', '--outPath', type=str, help='Path to output file')
     parser.add_argument('-w', '--workers', type=int, help='Number of workers to use', default=4)
+    parser.add_argument('-s', '--silent', action=argparse.BooleanOptionalAction, help='Turn off logging', default=False)
     args = parser.parse_args()
     
     args.outPath = args.outPath or args.inPath.replace('.txt', '.soln')
     
+    # check if the output file exists
+    if os.path.exists(args.outPath):
+        if os.path.isfile(args.outPath):
+            _log(f"Output file {args.outPath} already exists")
+            raise SystemExit
+        else:
+            args.outPath = os.path.join(args.outPath, os.path.basename(args.inPath).replace('.txt', '.soln'))
+    else:
+        _log(f"Output path {args.outPath} does not exist")
+        raise SystemExit
+    
+    global _silent
+    _silent = args.silent
+    
     t0 = time.time()
     solve(args.inPath, args.outPath, args.workers)
-    print(f"Time: {time.time() - t0} seconds")
+    _log(f"Time elapsed: {time.time() - t0} seconds")

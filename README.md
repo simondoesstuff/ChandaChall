@@ -1,6 +1,10 @@
 Simon Walker  
 2/20/2022
 
+---
+
+My algorithm can solve the largest dataset in 135 seconds.
+
 # Trickle Algorithm
 
 For a dataset of $N$ nodes, the algorithm performs an insertion into the graph for each node.
@@ -10,7 +14,9 @@ previous nodes, but at theoretical worst case, it runs in $O(N)$.
 **Overall Runtime:**  $\approx O(N^2)$
 
 ## Source Code
-![trickle.py](research/trickle.py)
+
+**Source**: [trickle.py](research/trickle.py)  
+**79867.txt solution:** [79867.soln](data/solutions/trickle_threads/79867.soln)
 
 ## Explanation
 

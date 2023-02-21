@@ -1,6 +1,7 @@
 import concurrent.futures # thread pool
 
 
+_silent = False
 def _log(message):
     global _silent
     if not _silent:
@@ -206,18 +207,11 @@ if __name__ == '__main__':
     
     args.outPath = args.outPath or args.inPath.replace('.txt', '.soln')
     
-    # check if the output file exists
-    if os.path.exists(args.outPath):
-        if os.path.isfile(args.outPath):
-            _log(f"Output file {args.outPath} already exists")
-            raise SystemExit
-        else:
-            args.outPath = os.path.join(args.outPath, os.path.basename(args.inPath).replace('.txt', '.soln'))
-    else:
-        _log(f"Output path {args.outPath} does not exist")
+    # check if the output file's directory exists
+    if not os.path.exists(os.path.dirname(args.outPath)):
+        print(f"Output directory {os.path.dirname(args.outPath)} does not exist.")
         raise SystemExit
     
-    global _silent
     _silent = args.silent
     
     t0 = time.time()

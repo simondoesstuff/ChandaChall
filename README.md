@@ -1,9 +1,6 @@
-Simon Walker  
-2/20/2022
+## This algorithm can solve the largest dataset in 135 seconds.
 
 ---
-
-My algorithm can solve the largest dataset in 135 seconds.
 
 # Trickle Algorithm
 
@@ -16,7 +13,11 @@ previous nodes, but at theoretical worst case, it runs in $O(N)$.
 ## Source Code
 
 **Source**: [trickle.py](research/trickle.py)  
-**79867.txt solution:** [79867.soln](data/solutions/trickle_threads/79867.soln)
+**79867.txt solution:** [79867.soln](data/solutions/trickle_threads/79867.soln)  
+
+**Usage:** `py trickle.py 79867.txt`  
+Performance can be increased with more workers: `py trickle.py 79867.txt -w 12`  
+See all the options: `py trickle.py -h`  
 
 ## Explanation
 
@@ -50,8 +51,15 @@ All nodes within the `layer` perform their analysis of the graph in parallel.
 After the analysis is complete, the results are applied to the graph all at once
 in-sync.
 
+Of course, speed will vary with hardware. But the parallelization with allow it to scale better with more CPUs.
+
 ### Extra tricks
 
 Nodes are a series of binary attributes. I represent all nodes as a number with each bit corresponding
-to an attribute. This allows me to determine $a \subset b$ in 2 cycles. The bitwise conversion
+to an attribute. This allows me to determine $a \subset b$ in about 2 cycles. The bitwise conversion
 is done on the dataset during import and export.
+
+---
+
+Simon Walker  
+2/20/2022

@@ -100,3 +100,11 @@ def solve(inPath, outPath):
     S = import_data(inPath)
     graph = build_graph(S)
     export_soln(graph, outPath)
+
+
+if __name__ == '__main__':
+    import time
+    t0 = time.time()
+    p = 3515
+    solve(f'./data/{p}.txt', f'./data/solutions/{p}_dfs_insert.txt')
+    print(f"Time: {time.time() - t0} seconds")

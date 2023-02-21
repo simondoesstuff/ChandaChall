@@ -1,31 +1,22 @@
 import concurrent.futures
-import time
+import dis
 
 
-def demo_func(num):
-    for i in range(num):
-        a = i**2
-
-
-def without_threads():
-    for i in range(6):
-        demo_func(10000000)
-
-
-def threads():
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        executor.map(demo_func, [10000000]*3)
-        executor.map(demo_func, [10000000]*3)
+def fn(a):
+    return a
 
 
 def main():
-    t0 = time.time()
-    without_threads()
-    print(f'Without threads: {time.time() - t0}')
-    t0 = time.time()
-    threads()
-    print(f'With threads: {time.time() - t0}')
+    workers = 3
+    
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        for size in range(50, 500, 50):
+            results = list(executor.map(fn, range(size), chunksize=size // workers))
+            print(f"Sum: {sum(results)}")
 
 
 if __name__ == '__main__':
+    graph = {2: 5, 9: 3}
+    g = [graph]*4
+    dis.dis(lambda x: g)
     main()

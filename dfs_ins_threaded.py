@@ -1,4 +1,6 @@
 import concurrent.futures # thread pool
+import argparse
+import time
 
 
 def import_data(path):
@@ -118,10 +120,15 @@ def solve(inPath, outPath, workers):
     export_soln(graph, outPath)
 
 
-
 if __name__ == '__main__':
-    import time
+    parser = argparse.ArgumentParser("DFSIns")
+    parser.add_argument('inPath', type=str, help='Path to input file')
+    parser.add_argument('-o', '--outPath', type=str, help='Path to output file')
+    parser.add_argument('-w', '--workers', type=int, help='Number of workers to use', default=4)
+    args = parser.parse_args()
+    
+    args.outPath = args.outPath or args.inPath.replace('.txt', '.soln')
+    
     t0 = time.time()
-    p = 79867
-    solve(f'./data/{p}.txt', f'./data/solutions/{p}_dfsi_thread.txt', 12)
+    solve(args.inPath, args.outPath, args.workers)
     print(f"Time: {time.time() - t0} seconds")

@@ -1,4 +1,4 @@
-## This algorithm can solve the largest dataset in 135 seconds.
+This algorithm can solve the largest dataset in 135 seconds on an Apple M1 Pro CPU.
 
 # Trickle Algorithm
 

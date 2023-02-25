@@ -198,7 +198,7 @@ if __name__ == '__main__':
     import time
     import os
     
-    parser = argparse.ArgumentParser("DFSIns")
+    parser = argparse.ArgumentParser("Trickle")
     parser.add_argument('inPath', type=str, help='Path to input file')
     parser.add_argument('-o', '--outPath', type=str, help='Path to output file')
     parser.add_argument('-w', '--workers', type=int, help='Number of workers to use', default=4)

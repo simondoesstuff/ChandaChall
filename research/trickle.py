@@ -1,13 +1,6 @@
 import concurrent.futures # thread pool
 
 
-_silent = False
-def _log(message):
-    global _silent
-    if not _silent:
-        print(message)
-
-
 def import_data(path):
     """Imports data from a file. The file should be a list of integers separated by spaces on each line.
     Nodes are represented as a bitwise integer where each bit represents an attribute.
@@ -124,6 +117,25 @@ def analyze(graph, node):
     return results
 
 
+def by_size(S):
+    """Groups nodes by size.
+
+    Args:
+        S (list): List of nodes
+
+    Returns:
+        list: Dict of nodes grouped by size
+    """
+    
+    bySize = {}
+    
+    for node in S:
+        length = bin(node).count('1')
+        bySize.setdefault(length, []).append(node)
+    
+    return bySize
+
+
 # runs in O(|S|^2) time
 def build_graph(S, workers):
     """Analyze the graph and build the solution.
@@ -138,15 +150,10 @@ def build_graph(S, workers):
     S = list(S)
     dataSize = len(S)
     graph = {0: set()}
-    dataBySize = {}
-
-    # sorting nodes by size
-    for node in S:
-        length = bin(node).count('1')
-        dataBySize.setdefault(length, []).append(node)
+    dataBySize = by_size(S)
     
-    _log(f"- Analyzing {len(S)} nodes with {workers} workers.")
-    _log(f"- Beginning with {len(dataBySize)} layers.")
+    print(f"- Analyzing {len(S)} nodes with {workers} workers.")
+    print(f"- Beginning with {len(dataBySize)} layers.")
 
     completedNodes = 0
 
@@ -166,7 +173,7 @@ def build_graph(S, workers):
                     apply_insert(graph, *action)
             
             completedNodes += layerSize
-            _log(f"\t- ~{completedNodes/dataSize * 100:.1f}% done.\tCompleted layer size {k} with {len(nextLayer)} nodes.")
+            print(f"\t- ~{completedNodes/dataSize * 100:.1f}% done.\tCompleted layer size {k} with {len(nextLayer)} nodes.")
     
     # root node is not part of the solution
     graph.pop(0)
@@ -187,7 +194,7 @@ def solve(inPath: str, outPath: str, workers: int):
     
     S = import_data(inPath)
     graph = build_graph(S, workers)
-    _log("- Completed analysis.")
+    print("- Completed analysis.")
     export_soln(graph, outPath)
 
 
@@ -202,7 +209,6 @@ if __name__ == '__main__':
     parser.add_argument('inPath', type=str, help='Path to input file')
     parser.add_argument('-o', '--outPath', type=str, help='Path to output file')
     parser.add_argument('-w', '--workers', type=int, help='Number of workers to use', default=4)
-    parser.add_argument('-s', '--silent', action=argparse.BooleanOptionalAction, help='Turn off logging', default=False)
     args = parser.parse_args()
     
     args.outPath = args.outPath or args.inPath.replace('.txt', '.soln')
@@ -212,8 +218,6 @@ if __name__ == '__main__':
         print(f"Output directory {os.path.dirname(args.outPath)} does not exist.")
         raise SystemExit
     
-    _silent = args.silent
-    
     t0 = time.time()
     solve(args.inPath, args.outPath, args.workers)
-    _log(f"Time elapsed: {time.time() - t0} seconds")
+    print(f"Time elapsed: {time.time() - t0} seconds")

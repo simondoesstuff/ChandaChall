@@ -1,8 +1,9 @@
 __pycache__/
+
 rust-impl/trickle/target/
 rust-impl/trickle/.idea/
 c#-impl/Trickle/bin/
 c#-impl/Trickle/obj/
 c#-impl/Trickle/.idea/
 
-research/stitch.py
+research/super_nodes.py

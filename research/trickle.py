@@ -61,11 +61,11 @@ def export_soln(graph, path):
         f.write(strContents)
 
 
-def _issubset(a, b):
+def subset(a, b):
     return (a & b) == a
 
 
-def _apply_insert(graph, node, parent, child):
+def apply_insert(graph, node, parent, child):
     """Apply an insert operation to the graph.
     If child is None, then the node is inserted as new a child of parent.
     Otherwise, the edge is split and the node is inserted as a child of parent and child is inserted as a child of node.
@@ -82,7 +82,7 @@ def _apply_insert(graph, node, parent, child):
         parentAdj.add(node)
 
 
-def _analyze(graph, node):
+def analyze(graph, node):
     """Analyze the graph in the context of a single node.
 
     Returns:
@@ -108,11 +108,11 @@ def _analyze(graph, node):
             if child in visited:
                 stuck = False
             # if the child is a subset of the node, we continue along the path
-            if _issubset(child, node):
+            if subset(child, node):
                 frontier.append(child)
                 stuck = False
             # if the node is a subset of the child, we have found an edge split
-            elif _issubset(node, child):
+            elif subset(node, child):
                 # we have found an edge split
                 stuck = False
                 results.append((node, parent, child))
@@ -158,12 +158,12 @@ def build_graph(S, workers):
             chunkSize = max(1, layerSize // workers)
             
             # parallelize the analysis
-            results = list(pool.map(_analyze, [graph] * layerSize, nextLayer, chunksize=chunkSize))
+            results = list(pool.map(analyze, [graph] * layerSize, nextLayer, chunksize=chunkSize))
 
             # apply the results in sync to avoid race conditions
             for result in results:
                 for action in result:
-                    _apply_insert(graph, *action)
+                    apply_insert(graph, *action)
             
             completedNodes += layerSize
             _log(f"\t- ~{completedNodes/dataSize * 100:.1f}% done.\tCompleted layer size {k} with {len(nextLayer)} nodes.")

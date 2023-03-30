@@ -7,10 +7,9 @@ def import_data(path):
 
     Args:
         path (str): Input file path
-
-    Yields:
-        int: extracted node
     """
+    
+    S = []
     
     with open(path) as f:
         for line in f:
@@ -20,7 +19,9 @@ def import_data(path):
                 j = j - 1
                 value = value | (1 << j)
             
-            yield value
+            S.append(value)
+    
+    return S
 
 
 def export_soln(graph, path):
@@ -147,7 +148,6 @@ def build_graph(S, workers):
         Dictionary: Graph in the form of a dictionary of edges
     """
     
-    S = list(S)
     dataSize = len(S)
     graph = {0: set()}
     dataBySize = by_size(S)
@@ -180,6 +180,8 @@ def build_graph(S, workers):
     # remove nodes with no children
     graph = {k: v for k, v in graph.items() if len(v) > 0}
     
+    print(f"- Completed analysis.")
+    
     return graph
 
 
@@ -194,7 +196,6 @@ def solve(inPath: str, outPath: str, workers: int):
     
     S = import_data(inPath)
     graph = build_graph(S, workers)
-    print("- Completed analysis.")
     export_soln(graph, outPath)
 
 
